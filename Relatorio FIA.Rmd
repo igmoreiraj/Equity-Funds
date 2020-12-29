@@ -1,0 +1,83 @@
+---
+title: "`r paste0('Análise dos Fundos de Ações')`"
+author: "Minha Árvore de Dinheiro"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document: 
+    latex_engine: lualatex
+    toc: yes
+    fig_caption: yes        
+    includes:  
+      in_header: my_header.tex
+params:
+  PM: "Consol"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#load libraries
+source('02- Get Factor Data.R')
+source('03-Run Analysis.R', encoding = 'UTF-8')
+```
+
+## Analise de Fundos de Investimento em Ações
+
+Olá pessoal, como foi o Natal de vocês, tudo bem?
+
+No post de hoje vou mostrar para vocês um estudo que fiz sobre os fundos de ações atualmente disponíveis no mercado. A idéia é avaliar quais foram os fundos que melhor justificaram suas taxas de administração oferecendo retornos descorrelacionados de índices do mercado como o Ibovespa. A idéia aqui não é tão complexa quanto parece. Existe uma discussão já de muitos anos no mercado financeiro entre gestão ativa e gestão passiva de fundos. Mas o que diabos seria gestão ativa e passiva? 
+
+Gestão ativa de um fundo é quando o gestor busca (ativamente?) investir de forma a superar um índice de referência (no caso dos fundos de ações geralmente este índice é o Ibovespa). Já na gestão passiva o gestor busca apenas replicar o mais fielmente possível o índice. 
+
+Tipicamente, um fundo de gestão ativa requer muito mais pesquisa e análise do que um fundo de gestão passiva, por isso esses fundos ativos tendem a cobrar uma taxa de administração bem maior e além disso costumam cobrar taxas de performance sobre o valor que exceder o índice.
+
+A pergunta então que queremos estudar no post de hoje é: Será que vale a pena pagar as taxas mais elevadas dos fundos de investimento em ação que estão disponíveis no mercado hoje?
+
+## Fundos Estudados
+
+Antes de mais nada, cabe um alerta aqui ao estudo que vou mostrar: de forma alguma tenho a pretensão de ser o dono da verdade e alegar que este estudo fornece com precisão fundos que não valem a pena de se investir e muito menos resolver a discussão sobre o que vale mais a pena a gestão passiva ou ativa. Eu acredito que cada uma dessas estratégias possuem vantagens e desvantagens e através da informação e com alguns modelos, podemos tomar melhores decisões sobre o que queremos no momento.
+
+Mas vamos parar de enrolar e começar de verdade!
+
+Para realizar o estudo, eu selecionei apenas os fundos que encontrei disponíveis para investimento no dia 28/12/2020 pela plataforma da XP Investimentos. Caso tenham algum fundo que queiram acrescentar, basta deixar nos comentários que eu acrescento ele ao modelo!
+
+Outra restrição ao número de fundos utilizados no estudo está no histórico do fundo. Como esses estudos requerem métricas estatísticas específicas, é necessário um histórico suficientemente grande para avaliarmos com robustez a performance dos fundos. Assim sendo, eu selecionei apenas fundos que possuíssem ao menos 5 anos de vida e portanto com um histórico de 5 anos de retornos diários.
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(patchwork)
+
+#var_plot<-adjusted.data[[params$PM]]$`Top 20 VaR`
+  plot1 <- model.df %>%
+    slice_max(order_by = statistic, n=20) %>% 
+    ggplot(aes(x = reorder(V3, statistic), y = statistic)) +
+    geom_bar(
+      stat = "identity",
+      position = "dodge",
+      color = 'black',
+      fill = 'deepskyblue4'
+    ) +
+    coord_flip() +
+    theme_minimal() +
+    theme(
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.text.x = element_text(
+        angle = 90,
+        vjust = 0.5,
+        hjust = 1,
+        face = 'bold',
+        size = 10
+      ),
+      axis.text.y = element_text(face = 'bold'),
+      legend.position = "bottom",
+      legend.title = element_blank()
+    ) +
+    labs(title = "Ranking dos 20 melhores FIAs",
+         subtitle = paste0("updated on: ", format(Sys.Date(), "%d/%m/%Y")))
+  
+plot1
+
+```
